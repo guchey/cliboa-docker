@@ -1,0 +1,85 @@
+#!/bin/bash
+#
+# Run cliboa
+
+set -e
+
+#######################################
+# Run scenario.
+# Globals:
+#   SCENARIO
+# Arguments:
+#   None
+#######################################
+execute_scenario_from_stdin() {
+  echo "${SCENARIO}" > project/default/scenario.yml
+  python bin/clibomanager.py default
+}
+
+#######################################
+# Run project.
+# Globals:
+#   PROJECT
+# Arguments:
+#   None
+#######################################
+execute() {
+  python bin/clibomanager.py "${PROJECT}"
+}
+
+#######################################
+# Print usage
+# Globals:
+#   None
+# Arguments:
+#   None
+#######################################
+usage() {
+  cat <<EOF
+
+Usage:	cliboa [OPTIONS] COMMAND
+
+Options:
+  -l, --log-level string   Set the logging level ("DEBUG"|"INFO"|"WARN"|"ERROR"|"FATAL") (default "INFO")
+
+Commands:
+  help         Execute cliboa.
+EOF
+}
+
+for OPT in "$@"
+do
+    case $OPT in
+        -h | --help)
+          usage
+          exit 1
+          ;;
+        -l | --log-level)
+          if [[ -z "$2" ]] || [[ "$2" =~ ^-+ ]]; then
+              echo "cliboa: option requires an argument -- $1" 1>&2
+              exit 1
+          fi
+          sed -i -e "s/INFO/$2/g" conf/logging.conf
+          shift 2
+          ;;
+        -*)
+          echo "cliboa: illegal option -- '$(echo $1 | sed 's/^-*//')'" 1>&2
+          exit 1
+          ;;
+    esac
+done
+
+PROJECT="$1"
+
+if [ -n "${PROJECT}" ]; then
+  execute
+  exit 0
+fi
+
+if [ -p /dev/stdin ]; then
+  SCENARIO=$(cat -)
+else
+  SCENARIO=$(while read -u 0 -r line; do echo ${line}; done)
+fi
+
+execute_scenario_from_stdin
