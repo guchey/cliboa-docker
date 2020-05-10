@@ -1,12 +1,12 @@
 FROM python:3.7
 
 ENV LANG C.UTF-8
-ENV PIPENV_VERSION=2018.11.26
-ENV CLIBOA_VERSION=1.3.1b0
+ENV PYPI_PIPENV_VERSION=2018.11.26
+ENV PYPI_CLIBOA_VERSION=1.3.1b0
 
 RUN pip install \
-      pipenv=="${PIPENV_VERSION}" \
-      cliboa=="${CLIBOA_VERSION}"
+      pipenv=="${PYPI_PIPENV_VERSION}" \
+      cliboa=="${PYPI_CLIBOA_VERSION}"
 RUN cliboadmin init cliboa
 WORKDIR /cliboa
 COPY conf conf
