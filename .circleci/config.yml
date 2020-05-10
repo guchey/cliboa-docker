@@ -34,7 +34,6 @@ workflows:
           image: taguchi8s/cliboa-docker
           tag: latest
           path: src
-          use-remote-docker: true
           requires:
             - check
             - docker/hadolint
@@ -45,4 +44,3 @@ workflows:
           image: taguchi8s/cliboa-docker
           tag: release-${CIRCLE_TAG}
           path: src
-          use-remote-docker: true
