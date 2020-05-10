@@ -12,7 +12,7 @@ jobs:
 release-filters: &release-filters
   filters:
     tags:
-      only: /^[0-9.]+/
+      only: /.*/
     branches:
       ignore: /.*/
 
