@@ -17,4 +17,4 @@ RUN cliboadmin create default
 COPY bin/cliboa /usr/local/bin/cliboa
 RUN chmod +x /usr/local/bin/cliboa
 
-CMD [ "cliboa", "help" ]
+CMD [ "cliboa", "-h" ]
