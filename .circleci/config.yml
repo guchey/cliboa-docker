@@ -1,0 +1,48 @@
+version: 2.1
+orbs:
+  docker: circleci/docker@1.0.1
+jobs:
+  check:
+    executor: docker/docker
+    steps:
+      - setup_remote_docker
+      - checkout
+      - docker/check
+
+release-filters: &release-filters
+  filters:
+    tags:
+      only: /^[0-9.]+/
+    branches:
+      ignore: /.*/
+
+latest-filters: &latest-filters
+  filters:
+    branches:
+      only:
+      - master
+
+workflows:
+  deploy-latest:
+    jobs:
+      - check
+      - docker/hadolint:
+          dockerfiles: src/Dockerfile
+          workspace-root: src
+      - docker/publish:
+          <<: *latest-filters
+          image: taguchi8s/cliboa-docker
+          tag: latest
+          path: src
+          use-remote-docker: true
+          requires:
+            - check
+            - docker/hadolint
+  deploy-release:
+    jobs:
+      - docker/publish:
+          <<: *release-filters
+          image: taguchi8s/cliboa-docker
+          tag: release-${CIRCLE_TAG}
+          path: src
+          use-remote-docker: true
