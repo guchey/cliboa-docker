@@ -1,3 +1,5 @@
+[![CircleCI](https://circleci.com/gh/taguchi8s/cliboa-docker.svg?style=svg)](https://circleci.com/gh/taguchi8s/cliboa-docker)
+
 # What is cliboa-docker?
 
 Image for easy use of [cliboa](https://github.com/BrainPad/cliboa).
