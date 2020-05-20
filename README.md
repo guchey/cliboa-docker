@@ -2,13 +2,19 @@
 
 # What is cliboa-docker?
 
-Image for easy use of [cliboa](https://github.com/BrainPad/cliboa).
+This Docker container implements a [cliboa](https://github.com/BrainPad/cliboa) runner, execution environment and can easily perform container-based ETL processing.
 
 # How to use this image
 
-## Create your scenario.yml
+## You can try it out quickly
+
+[Sample ETL processing](https://github.com/taguchi8s/cliboa-docker/blob/master/sample/README.md)
+
+## Create your scenario of ETL processing
 
 [YAML Configuration](https://github.com/BrainPad/cliboa/blob/master/docs/yaml_configuration.md)
+
+# There are several ways to do it
 
 ## Run scenario with file redirect
 
@@ -22,7 +28,7 @@ $ docker run -i taguchi8s/cliboa-docker cliboa < scenario.yml
 $ cat scenario.yml | docker run -i taguchi8s/cliboa-docker cliboa
 ```
 
-## Run project from local
+## Run local project
 
 ```
 $ docker run -v /path/to/<project_name>:/cliboa/project/<project_name> taguchi8s/cliboa-docker cliboa <project_name>
