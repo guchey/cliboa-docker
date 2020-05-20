@@ -1,0 +1,25 @@
+scenario:
+  - step:
+    class: FtpDownload
+    arguments:
+      host: cliboa_sample_ftp
+      user: foo
+      password: bar
+      src_dir: ./
+      src_pattern: '.*\.csv'
+      dest_dir: /tmp
+  - step:
+    class: FileCompress
+    arguments:
+      src_dir: /tmp
+      src_pattern: '.*\.csv'
+      format: gzip
+  - step:
+    class: SftpUpload
+    arguments:
+      host: cliboa_sample_sftp
+      user: foo
+      password: bar
+      src_dir: /tmp
+      src_pattern: '.*\.csv\.gz'
+      dest_dir: /
