@@ -1,0 +1,28 @@
+version: "3.5"
+services:
+  sftp:
+    image: atmoz/sftp:alpine
+    container_name: cliboa_sample_sftp
+    volumes:
+      - ./sftp/foo:/home/foo
+    command: foo:bar:1001
+    networks:
+      - cliboa_sample_network
+  ftp:
+    image: fauria/vsftpd
+    container_name: cliboa_sample_ftp
+    volumes:
+      - ./ftp/foo:/home/vsftpd/foo
+    environment:
+      FTP_USER: "foo"
+      FTP_PASS: "bar"
+      PASV_ADDR_RESOLVE: "YES"
+      PASV_ADDRESS: "cliboa_sample_ftp"
+      PASV_MIN_PORT: 21100
+      PASV_MAX_PORT: 21110
+    networks:
+      - cliboa_sample_network
+networks:
+  cliboa_sample_network:
+    name: cliboa_sample_network
+    driver: bridge
