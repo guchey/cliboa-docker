@@ -10,7 +10,7 @@ This Docker container implements a [cliboa](https://github.com/BrainPad/cliboa) 
 
 [Sample ETL processing](https://github.com/taguchi8s/cliboa-docker/blob/master/sample/README.md)
 
-## Create your scenario of ETL processing
+## You are free to create your own scenario
 
 [YAML Configuration](https://github.com/BrainPad/cliboa/blob/master/docs/yaml_configuration.md)
 
