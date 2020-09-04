@@ -1,6 +1,30 @@
 version: 2.1
 orbs:
-  docker: circleci/docker@1.0.1
+  docker: circleci/docker@1.4.0
+
+commands:
+  ghcr_check:
+    steps:
+      - run:
+          name: auth ghcr
+          command: |
+            echo $CR_PAT | docker login ghcr.io -u taguchi8s --password-stdin
+  ghcr_publish:
+    parameters:
+      image:
+        type: string
+      tag:
+        type: string
+      path:
+        type: string
+    steps:
+      - run:
+          name: build and publish ghcr
+          command: |
+            cd src
+            docker build -t ghcr.io/<< parameters.image >>:<< parameters.tag >> .
+            docker push ghcr.io/<< parameters.image >>:<< parameters.tag >>
+
 jobs:
   check:
     executor: docker/docker
@@ -8,6 +32,25 @@ jobs:
       - setup_remote_docker
       - checkout
       - docker/check
+      - ghcr_check
+  
+  ghcr_publish:
+    parameters:
+      image:
+        type: string
+      tag:
+        type: string
+      path:
+        type: string
+    executor: docker/docker
+    steps:
+      - setup_remote_docker
+      - checkout
+      - ghcr_check
+      - ghcr_publish:
+          image: << parameters.image >>
+          tag: << parameters.tag >>
+          path: << parameters.path >>
 
 release-filters: &release-filters
   filters:
@@ -37,9 +80,22 @@ workflows:
           requires:
             - check
             - docker/hadolint
+      - ghcr_publish:
+          <<: *latest-filters
+          image: taguchi8s/cliboa-docker
+          tag: latest
+          path: src
+          requires:
+            - check
+            - docker/hadolint
   deploy-release:
     jobs:
       - docker/publish:
+          <<: *release-filters
+          image: taguchi8s/cliboa-docker
+          tag: release-${CIRCLE_TAG}
+          path: src
+      - ghcr_publish:
           <<: *release-filters
           image: taguchi8s/cliboa-docker
           tag: release-${CIRCLE_TAG}
