@@ -90,7 +90,7 @@ workflows:
           registry: ghcr.io
       - docker/publish:
           <<: *release-filters
-          image: docker.pkg.github.com/taguchi8s/cliboa-docker/cliboa-docker
+          image: taguchi8s/cliboa-docker/cliboa-docker
           tag: release-${CIRCLE_TAG}
           path: src
           docker-context: src
@@ -99,7 +99,7 @@ workflows:
           registry: docker.pkg.github.com
       - docker/publish:
           <<: *release-filters
-          image: docker.pkg.github.com/taguchi8s/cliboa-docker/cliboa-docker
+          image: taguchi8s/cliboa-docker/cliboa-docker
           tag: latest
           path: src
           docker-context: src
