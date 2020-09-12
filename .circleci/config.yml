@@ -4,11 +4,31 @@ orbs:
 
 commands:
   ghcr_check:
+    parameters:
+      user:
+        type: string
+      password:
+        type: env_var_name
+        default: CR_PAT
     steps:
       - run:
           name: auth ghcr
           command: |
-            echo $CR_PAT | docker login ghcr.io -u taguchi8s --password-stdin
+            echo << parameters.password >> | docker login ghcr.io -u << parameters.user >> --password-stdin
+  ghcr_build:
+    parameters:
+      image:
+        type: string
+      tag:
+        type: string
+      path:
+        type: string
+    steps:
+      - run:
+          name: build ghcr
+          command: |
+            cd src
+            docker build -t ghcr.io/<< parameters.image >>:<< parameters.tag >> .
   ghcr_publish:
     parameters:
       image:
@@ -32,7 +52,8 @@ jobs:
       - setup_remote_docker
       - checkout
       - docker/check
-      - ghcr_check
+      - ghcr_check:
+          user: taguchi8s
   
   ghcr_publish:
     parameters:
@@ -46,7 +67,6 @@ jobs:
     steps:
       - setup_remote_docker
       - checkout
-      - ghcr_check
       - ghcr_publish:
           image: << parameters.image >>
           tag: << parameters.tag >>
