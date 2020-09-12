@@ -25,7 +25,7 @@ commands:
         type: string
     steps:
       - run:
-          name: build ghcr
+          name: build docker image
           command: |
             cd << parameters.path >>
             docker build -t ghcr.io/<< parameters.image >>:<< parameters.tag >> .
@@ -104,12 +104,6 @@ release-filters: &release-filters
     branches:
       ignore: /.*/
 
-latest-filters: &latest-filters
-  filters:
-    branches:
-      only:
-      - master
-
 workflows:
   deploy-latest:
     jobs:
@@ -123,7 +117,7 @@ workflows:
           dockerfiles: src/Dockerfile
           workspace-root: src
       - docker/publish:
-          <<: *latest-filters
+          <<: *release-filters
           image: taguchi8s/cliboa-docker
           tag: latest
           path: src
@@ -131,7 +125,7 @@ workflows:
             - check_dockerhub
             - docker/hadolint
       - ghcr_publish:
-          <<: *latest-filters
+          <<: *release-filters
           image: taguchi8s/cliboa-docker
           tag: latest
           path: src
