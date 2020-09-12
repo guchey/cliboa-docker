@@ -49,6 +49,7 @@ workflows:
           image: taguchi8s/cliboa-docker
           tag: latest
           path: src
+          docker-context: src
           deploy: false
 
   deploy-release:
@@ -60,16 +61,19 @@ workflows:
           image: taguchi8s/cliboa-docker
           tag: release-${CIRCLE_TAG}
           path: src
+          docker-context: src
       - docker/publish:
           <<: *release-filters
           image: taguchi8s/cliboa-docker
           tag: latest
           path: src
+          docker-context: src
       - docker/publish:
           <<: *release-filters
           image: taguchi8s/cliboa-docker
           tag: release-${CIRCLE_TAG}
           path: src
+          docker-context: src
           registry: ghcr.io
           after_build:
             - login_github_container_registory:
@@ -79,6 +83,7 @@ workflows:
           image: taguchi8s/cliboa-docker
           tag: latest
           path: src
+          docker-context: src
           registry: ghcr.io
           after_build:
             - login_github_container_registory:
