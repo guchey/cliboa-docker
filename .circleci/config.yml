@@ -18,6 +18,15 @@ jobs:
           docker-username: CR_USER
           registry: ghcr.io
 
+  check_ghpkg:
+    executor: docker/docker
+    steps:
+      - setup_remote_docker
+      - docker/check:
+          docker-password: CR_PAT
+          docker-username: CR_USER
+          registry: https://docker.pkg.github.com
+
 release-filters: &release-filters
   filters:
     tags:
@@ -30,6 +39,7 @@ workflows:
     jobs:
       - check_dockerhub
       - check_ghcr
+      - check_ghpkg
       - docker/hadolint:
           dockerfiles: src/Dockerfile
           workspace-root: src
@@ -42,8 +52,12 @@ workflows:
 
   deploy-release:
     jobs:
-      - check_dockerhub
-      - check_ghcr
+      - check_dockerhub:
+          <<: *release-filters
+      - check_ghcr:
+          <<: *release-filters
+      - check_ghpkg:
+          <<: *release-filters
       - docker/publish:
           <<: *release-filters
           image: taguchi8s/cliboa-docker
@@ -74,3 +88,21 @@ workflows:
           docker-password: CR_PAT
           docker-username: CR_USER
           registry: ghcr.io
+      - docker/publish:
+          <<: *release-filters
+          image: taguchi8s/cliboa-docker
+          tag: release-${CIRCLE_TAG}
+          path: src
+          docker-context: src
+          docker-password: CR_PAT
+          docker-username: CR_USER
+          registry: https://docker.pkg.github.com
+      - docker/publish:
+          <<: *release-filters
+          image: taguchi8s/cliboa-docker
+          tag: latest
+          path: src
+          docker-context: src
+          docker-password: CR_PAT
+          docker-username: CR_USER
+          registry: https://docker.pkg.github.com
