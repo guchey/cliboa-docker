@@ -118,31 +118,19 @@ workflows:
           path: src
           requires:
             - docker/hadolint
-      - docker/publish:
-          <<: *release-filters
-          image: taguchi8s/cliboa-docker
-          tag: latest
-          path: src
-          requires:
-            - check_dockerhub
-            - build
-      - ghcr_publish:
-          <<: *release-filters
-          image: taguchi8s/cliboa-docker
-          tag: latest
-          path: src
-          requires:
-            - check_ghcr
-            - build
 
   deploy-release:
     jobs:
-      - check_dockerhub
-      - check_ghcr
+      - check_dockerhub:
+          <<: *release-filters
+      - check_ghcr:
+          <<: *release-filters
       - docker/hadolint:
+          <<: *release-filters
           dockerfiles: src/Dockerfile
           workspace-root: src
       - build:
+          <<: *release-filters
           image: taguchi8s/cliboa-docker
           tag: latest
           path: src
@@ -156,10 +144,26 @@ workflows:
           requires:
             - check_dockerhub
             - build
+      - docker/publish:
+          <<: *release-filters
+          image: taguchi8s/cliboa-docker
+          tag: latest
+          path: src
+          requires:
+            - check_dockerhub
+            - build
       - ghcr_publish:
           <<: *release-filters
           image: taguchi8s/cliboa-docker
           tag: release-${CIRCLE_TAG}
+          path: src
+          requires:
+            - check_ghcr
+            - build
+      - ghcr_publish:
+          <<: *release-filters
+          image: taguchi8s/cliboa-docker
+          tag: latest
           path: src
           requires:
             - check_ghcr
