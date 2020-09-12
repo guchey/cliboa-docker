@@ -67,6 +67,8 @@ jobs:
     steps:
       - setup_remote_docker
       - checkout
+      - ghcr_check:
+          user: taguchi8s
       - ghcr_publish:
           image: << parameters.image >>
           tag: << parameters.tag >>
