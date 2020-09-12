@@ -2,20 +2,6 @@ version: 2.1
 orbs:
   docker: circleci/docker@1.4.0
 
-commands:
-  login_github_container_registory:
-    parameters:
-      user:
-        type: string
-      password:
-        type: env_var_name
-        default: CR_PAT
-    steps:
-      - run:
-          name: auth ghcr
-          command: |
-            echo ${<< parameters.password >>} | docker login ghcr.io -u << parameters.user >> --password-stdin
-
 jobs:
   check_dockerhub:
     executor: docker/docker
@@ -27,8 +13,10 @@ jobs:
     executor: docker/docker
     steps:
       - setup_remote_docker
-      - login_github_container_registory:
-          user: taguchi8s
+      - docker/check:
+          docker-password: CR_PAT
+          docker-username: CR_USER
+          registry: ghcr.io
 
 release-filters: &release-filters
   filters:
@@ -74,17 +62,15 @@ workflows:
           tag: release-${CIRCLE_TAG}
           path: src
           docker-context: src
+          docker-password: CR_PAT
+          docker-username: CR_USER
           registry: ghcr.io
-          after_build:
-            - login_github_container_registory:
-                user: taguchi8s
       - docker/publish:
           <<: *release-filters
           image: taguchi8s/cliboa-docker
           tag: latest
           path: src
           docker-context: src
+          docker-password: CR_PAT
+          docker-username: CR_USER
           registry: ghcr.io
-          after_build:
-            - login_github_container_registory:
-                user: taguchi8s
