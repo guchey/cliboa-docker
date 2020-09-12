@@ -10,7 +10,6 @@ RUN pip install \
 RUN cliboadmin init cliboa
 WORKDIR /cliboa
 COPY conf conf
-RUN rm common/scenario.yml
 RUN pipenv install --system --skip-lock
 RUN cliboadmin create default
 
