@@ -15,7 +15,7 @@ commands:
           name: auth ghcr
           command: |
             echo ${<< parameters.password >>} | docker login ghcr.io -u << parameters.user >> --password-stdin
-  ghcr_build:
+  build:
     parameters:
       image:
         type: string
@@ -27,7 +27,7 @@ commands:
       - run:
           name: build ghcr
           command: |
-            cd src
+            cd << parameters.path >>
             docker build -t ghcr.io/<< parameters.image >>:<< parameters.tag >> .
   ghcr_publish:
     parameters:
@@ -41,20 +41,43 @@ commands:
       - run:
           name: build and publish ghcr
           command: |
-            cd src
+            cd << parameters.path >>
             docker build -t ghcr.io/<< parameters.image >>:<< parameters.tag >> .
             docker push ghcr.io/<< parameters.image >>:<< parameters.tag >>
 
 jobs:
-  check:
+  check_dockerhub:
     executor: docker/docker
     steps:
       - setup_remote_docker
       - checkout
       - docker/check
+  
+  check_ghcr:
+    executor: docker/docker
+    steps:
+      - setup_remote_docker
+      - checkout
       - ghcr_check:
           user: taguchi8s
   
+  build:
+    parameters:
+      image:
+        type: string
+      tag:
+        type: string
+      path:
+        type: string
+    executor: docker/docker
+    steps:
+      - setup_remote_docker
+      - checkout
+      - build:
+          image: << parameters.image >>
+          tag: << parameters.tag >>
+          path: << parameters.path >>
+
   ghcr_publish:
     parameters:
       image:
@@ -90,7 +113,12 @@ latest-filters: &latest-filters
 workflows:
   deploy-latest:
     jobs:
-      - check
+      - check_dockerhub
+      - check_ghcr
+      - build:
+          image: taguchi8s/cliboa-docker
+          tag: latest
+          path: src
       - docker/hadolint:
           dockerfiles: src/Dockerfile
           workspace-root: src
@@ -100,7 +128,7 @@ workflows:
           tag: latest
           path: src
           requires:
-            - check
+            - check_dockerhub
             - docker/hadolint
       - ghcr_publish:
           <<: *latest-filters
@@ -108,17 +136,28 @@ workflows:
           tag: latest
           path: src
           requires:
-            - check
+            - check_ghcr
             - docker/hadolint
   deploy-release:
     jobs:
+      - check_dockerhub
+      - check_ghcr
+      - docker/hadolint:
+          dockerfiles: src/Dockerfile
+          workspace-root: src
       - docker/publish:
           <<: *release-filters
           image: taguchi8s/cliboa-docker
           tag: release-${CIRCLE_TAG}
           path: src
+          requires:
+            - check_dockerhub
+            - docker/hadolint
       - ghcr_publish:
           <<: *release-filters
           image: taguchi8s/cliboa-docker
           tag: release-${CIRCLE_TAG}
           path: src
+          requires:
+            - check_ghcr
+            - docker/hadolint
