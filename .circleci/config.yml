@@ -3,7 +3,7 @@ orbs:
   docker: circleci/docker@1.4.0
 
 commands:
-  ghcr_check:
+  login_github_container_registory:
     parameters:
       user:
         type: string
@@ -15,87 +15,20 @@ commands:
           name: auth ghcr
           command: |
             echo ${<< parameters.password >>} | docker login ghcr.io -u << parameters.user >> --password-stdin
-  build:
-    parameters:
-      image:
-        type: string
-      tag:
-        type: string
-      path:
-        type: string
-    steps:
-      - run:
-          name: build docker image
-          command: |
-            cd << parameters.path >>
-            docker build -t ghcr.io/<< parameters.image >>:<< parameters.tag >> .
-  ghcr_publish:
-    parameters:
-      image:
-        type: string
-      tag:
-        type: string
-      path:
-        type: string
-    steps:
-      - run:
-          name: build and publish ghcr
-          command: |
-            cd << parameters.path >>
-            docker build -t ghcr.io/<< parameters.image >>:<< parameters.tag >> .
-            docker push ghcr.io/<< parameters.image >>:<< parameters.tag >>
 
 jobs:
   check_dockerhub:
     executor: docker/docker
     steps:
       - setup_remote_docker
-      - checkout
       - docker/check
   
   check_ghcr:
     executor: docker/docker
     steps:
       - setup_remote_docker
-      - checkout
-      - ghcr_check:
+      - login_github_container_registory:
           user: taguchi8s
-  
-  build:
-    parameters:
-      image:
-        type: string
-      tag:
-        type: string
-      path:
-        type: string
-    executor: docker/docker
-    steps:
-      - setup_remote_docker
-      - checkout
-      - build:
-          image: << parameters.image >>
-          tag: << parameters.tag >>
-          path: << parameters.path >>
-
-  ghcr_publish:
-    parameters:
-      image:
-        type: string
-      tag:
-        type: string
-      path:
-        type: string
-    executor: docker/docker
-    steps:
-      - setup_remote_docker
-      - checkout
-      - ghcr_check:
-          user: taguchi8s
-      - ghcr_publish:
-          image: << parameters.image >>
-          tag: << parameters.tag >>
-          path: << parameters.path >>
 
 release-filters: &release-filters
   filters:
@@ -112,15 +45,16 @@ workflows:
       - docker/hadolint:
           dockerfiles: src/Dockerfile
           workspace-root: src
-      - build:
+      - docker/publish:
           image: taguchi8s/cliboa-docker
           tag: latest
           path: src
-          requires:
-            - docker/hadolint
+          deploy: false
 
   deploy-release:
     jobs:
+      - check_dockerhub
+      - check_ghcr
       - docker/publish:
           <<: *release-filters
           image: taguchi8s/cliboa-docker
@@ -131,13 +65,21 @@ workflows:
           image: taguchi8s/cliboa-docker
           tag: latest
           path: src
-      - ghcr_publish:
+      - docker/publish:
           <<: *release-filters
           image: taguchi8s/cliboa-docker
           tag: release-${CIRCLE_TAG}
           path: src
-      - ghcr_publish:
+          registry: ghcr.io
+          after_build:
+            - login_github_container_registory:
+                user: taguchi8s
+      - docker/publish:
           <<: *release-filters
           image: taguchi8s/cliboa-docker
           tag: latest
           path: src
+          registry: ghcr.io
+          after_build:
+            - login_github_container_registory:
+                user: taguchi8s
