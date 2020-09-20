@@ -1,19 +1,21 @@
-FROM python:3.7
+FROM python:3.7.9-slim-stretch
 
-ENV LANG C.UTF-8
-ENV PYPI_PIPENV_VERSION=2018.11.26
-ENV PYPI_CLIBOA_VERSION=1.3.3b0
+ENV LANG=C.UTF-8
+ENV PYPI_CLIBOA_VERSION=1.3.5b0
+ENV PATH=$PATH:/home/cliboa/.local/bin
 
-RUN pip install \
-      pipenv=="${PYPI_PIPENV_VERSION}" \
+RUN adduser cliboa --disabled-password
+USER cliboa
+
+RUN pip install --user \
       cliboa=="${PYPI_CLIBOA_VERSION}"
-RUN cliboadmin init cliboa
-WORKDIR /cliboa
-COPY conf conf
-RUN pipenv install --system --skip-lock
-RUN cliboadmin create default
 
-COPY bin/cliboa /usr/local/bin/cliboa
-RUN chmod +x /usr/local/bin/cliboa
+RUN cliboadmin init /home/cliboa/myproject
+WORKDIR /home/cliboa/myproject
+RUN pip install -r requirements.txt
+RUN cliboadmin create myetl
+
+COPY conf conf
+COPY bin /home/cliboa/.local/bin
 
 CMD [ "cliboa", "-h" ]
