@@ -12,8 +12,8 @@ set -e
 #   None
 #######################################
 execute_scenario_from_stdin() {
-  echo "${SCENARIO}" > project/default/scenario.yml
-  python bin/clibomanager.py default
+  echo "${SCENARIO}" > project/myetl/scenario.yml
+  python bin/clibomanager.py myetl
 }
 
 #######################################
